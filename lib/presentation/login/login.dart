@@ -1,7 +1,6 @@
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/constants/assets.dart';
 import 'package:boilerplate/core/stores/form/form_store.dart';
-import 'package:boilerplate/core/widgets/app_icon_widget.dart';
 import 'package:boilerplate/core/widgets/empty_app_bar_widget.dart';
 import 'package:boilerplate/core/widgets/progress_indicator_widget.dart';
 import 'package:boilerplate/core/widgets/rounded_button_widget.dart';
@@ -9,14 +8,15 @@ import 'package:boilerplate/core/widgets/textfield_widget.dart';
 import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
 import 'package:boilerplate/presentation/home/store/theme/theme_store.dart';
 import 'package:boilerplate/presentation/login/store/login_store.dart';
-import 'package:boilerplate/utils/device/device_utils.dart';
 import 'package:boilerplate/utils/locale/app_localization.dart';
 import 'package:boilerplate/utils/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../di/service_locator.dart';
+import '../../utils/device/device_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -26,7 +26,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   //text controllers:-----------------------------------------------------------
   TextEditingController _userEmailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
 
   //stores:---------------------------------------------------------------------
   final ThemeStore _themeStore = getIt<ThemeStore>();
@@ -108,11 +107,13 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            AppIconWidget(image: 'assets/icons/ic_appicon.png'),
+            SvgPicture.network(
+              'https://www.clipto.com/img/front/header/logo2.svg',
+              width: 100.0,
+              height: 100.0,
+            ),
             SizedBox(height: 24.0),
             _buildUserIdField(),
-            _buildPasswordField(),
-            _buildForgotPasswordButton(),
             _buildSignInButton()
           ],
         ),
@@ -134,50 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
           onChanged: (value) {
             _formStore.setUserId(_userEmailController.text);
           },
-          onFieldSubmitted: (value) {
-            FocusScope.of(context).requestFocus(_passwordFocusNode);
-          },
           errorText: _formStore.formErrorStore.userEmail,
         );
       },
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return Observer(
-      builder: (context) {
-        return TextFieldWidget(
-          hint:
-              AppLocalizations.of(context).translate('login_et_user_password'),
-          isObscure: true,
-          padding: EdgeInsets.only(top: 16.0),
-          icon: Icons.lock,
-          iconColor: _themeStore.darkMode ? Colors.white70 : Colors.black54,
-          textController: _passwordController,
-          focusNode: _passwordFocusNode,
-          errorText: _formStore.formErrorStore.password,
-          onChanged: (value) {
-            _formStore.setPassword(_passwordController.text);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildForgotPasswordButton() {
-    return Align(
-      alignment: FractionalOffset.centerRight,
-      child: MaterialButton(
-        padding: EdgeInsets.all(0.0),
-        child: Text(
-          AppLocalizations.of(context).translate('login_btn_forgot_password'),
-          style: Theme.of(context)
-              .textTheme
-              .caption
-              ?.copyWith(color: Colors.orangeAccent),
-        ),
-        onPressed: () {},
-      ),
     );
   }
 
@@ -189,10 +149,17 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: () async {
         if (_formStore.canLogin) {
           DeviceUtils.hideKeyboard(context);
-          _userStore.login(_userEmailController.text, _passwordController.text);
+          _userStore.login(_userEmailController.text);
         } else {
           _showErrorMessage('Please fill in all fields');
         }
+        // 用户点击邮箱时的URL
+        // const url = 'Clipto://openPage?page=home';
+        // if (await canLaunch(url)) {
+        //   await launch(url);
+        // } else {
+        //   throw 'Could not launch $url';
+        // }
       },
     );
   }
@@ -232,7 +199,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     // Clean up the controller when the Widget is removed from the Widget tree
     _userEmailController.dispose();
-    _passwordController.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
   }

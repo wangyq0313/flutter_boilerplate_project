@@ -68,9 +68,9 @@ abstract class _UserStore with Store {
 
   // actions:-------------------------------------------------------------------
   @action
-  Future login(String email, String password) async {
-    final LoginParams loginParams =
-        LoginParams(username: email, password: password);
+  Future login(String email) async {
+    final LoginParams loginParams = LoginParams(username: email);
+    print('loginParams:$loginParams');
     final future = _loginUseCase.call(params: loginParams);
     loginFuture = ObservableFuture(future);
 

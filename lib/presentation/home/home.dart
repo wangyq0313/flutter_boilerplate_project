@@ -1,5 +1,6 @@
 import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
 import 'package:boilerplate/di/service_locator.dart';
+import 'package:boilerplate/presentation/Application/application.dart';
 import 'package:boilerplate/presentation/home/store/language/language_store.dart';
 import 'package:boilerplate/presentation/home/store/theme/theme_store.dart';
 import 'package:boilerplate/presentation/post/post_list.dart';
@@ -31,17 +32,59 @@ class _HomeScreenState extends State<HomeScreen> {
   // app bar methods:-----------------------------------------------------------
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: Text(AppLocalizations.of(context).translate('home_tv_posts')),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          IconButton(
+            color: Colors.black,
+            icon: Icon(Icons.now_widgets_outlined),
+            onPressed: () {
+              // 处理左侧图标点击事件的代码
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      Application(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    var begin = Offset(1.0, 0.0);
+                    var end = Offset.zero;
+                    var curve = Curves.ease;
+                    var tween = Tween(begin: begin, end: end)
+                        .chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          SizedBox(width: 110), // 添加间距
+          Center(
+            child: Text('Clipto'),
+          )
+        ],
+      ),
       actions: _buildActions(context),
     );
   }
 
   List<Widget> _buildActions(BuildContext context) {
     return <Widget>[
-      _buildLanguageButton(),
-      _buildThemeButton(),
+      _buildSearchButton(),
+      // _buildLanguageButton(),
+      // _buildThemeButton(),
       _buildLogoutButton(),
     ];
+  }
+
+  Widget _buildSearchButton() {
+    return IconButton(
+        color: Colors.black, onPressed: () {}, icon: Icon(Icons.search));
   }
 
   Widget _buildThemeButton() {

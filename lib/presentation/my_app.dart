@@ -10,6 +10,7 @@ import 'package:boilerplate/utils/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:uni_links/uni_links.dart';
 
 import '../di/service_locator.dart';
 
@@ -20,12 +21,28 @@ class MyApp extends StatelessWidget {
   final ThemeStore _themeStore = getIt<ThemeStore>();
   final LanguageStore _languageStore = getIt<LanguageStore>();
   final UserStore _userStore = getIt<UserStore>();
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
+    // 订阅邮箱链接
+    uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        print('跳转$uri');
+        navigatorKey.currentState!.pushReplacementNamed(Routes.home);
+      }
+    });
+
     return Observer(
       builder: (context) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
+          onGenerateRoute: (settings) {
+            if (settings.name == Routes.home) {
+              return MaterialPageRoute(builder: (context) => HomeScreen());
+            }
+            // Handle other routes if needed
+          },
           debugShowCheckedModeBanner: false,
           title: Strings.appName,
           theme: _themeStore.darkMode
